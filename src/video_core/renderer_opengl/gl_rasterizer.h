@@ -218,7 +218,7 @@ private:
     void SyncLightDistanceAttenuationScale(int light_index);
 
     /// Upload the uniform blocks to the uniform buffer object
-    void UploadUniforms();
+    void UploadUniforms(bool use_gs);
 
     OpenGLState state;
 
@@ -253,6 +253,8 @@ private:
     OGLStreamBuffer uniform_buffer;
     OGLFramebuffer framebuffer;
     GLint uniform_buffer_alignment;
+    size_t uniform_size_aligned_vs;
+    size_t uniform_size_aligned_gs;
     size_t uniform_size_aligned_ps;
 
     // TODO (wwylele): consider caching texture cube in the rasterizer cache
@@ -294,11 +296,7 @@ private:
     void AnalyzeVertexArray(bool is_indexed);
     void SetupVertexArray(u8* array_ptr, GLintptr buffer_offset);
 
-    OGLBuffer vs_uniform_buffer;
-
     bool SetupVertexShader();
-
-    OGLBuffer gs_uniform_buffer;
 
     bool SetupGeometryShader();
 
