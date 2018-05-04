@@ -1117,18 +1117,37 @@ void GMainWindow::UpdateStatusBar() {
     }
 
     auto results = Core::System::GetInstance().GetAndResetPerfStats();
+    auto speed = results.emulation_speed * 100.0;
+    auto effectiveFrametime = results.frametime * 1000.0;
+    auto totalFrametime = (1 / results.game_fps) * 1000.0;
 
     if (Settings::values.use_frame_limit) {
         emu_speed_label->setText(tr("Speed: %1% / %2%")
-                                     .arg(results.emulation_speed * 100.0, 0, 'f', 0)
+                                     .arg(speed, 0, 'f', 2)
                                      .arg(Settings::values.frame_limit));
     } else {
-        emu_speed_label->setText(tr("Speed: %1%").arg(results.emulation_speed * 100.0, 0, 'f', 0));
+        emu_speed_label->setText(tr("Speed: %1%").arg(results.emulation_speed * 100.0, 0, 'f', 2));
     }
-    game_fps_label->setText(tr("Game: %1 FPS").arg(results.game_fps, 0, 'f', 0));
+    game_fps_label->setText(tr("Game: %1 FPS").arg(results.game_fps, 0, 'f', 2));
     emu_frametime_label->setText(tr("Frame: %1 ms / %2 ms")
-                                     .arg(results.frametime * 1000.0, 0, 'f', 2)
-                                     .arg((1 / results.game_fps) * 1000.0, 0, 'f', 2));
+                                     .arg(effectiveFrametime, 0, 'f', 2)
+                                     .arg(totalFrametime, 0, 'f', 2));
+
+    if (5.0 < abs(speed - 100)) {
+        emu_speed_label->setStyleSheet("QLabel { color: red; }");
+    } else if (abs(speed - 100) <= 1.0) {
+        emu_speed_label->setStyleSheet("QLabel { color: green; }");
+    } else {
+        emu_speed_label->setStyleSheet("QLabel { }");
+    }
+
+    if (totalFrametime - effectiveFrametime <= 10.0) {
+        emu_frametime_label->setStyleSheet("QLabel { color: red; }");
+    } else if (effectiveFrametime <= 10.0) {
+        emu_frametime_label->setStyleSheet("QLabel { color: green; }");
+    } else {
+        emu_frametime_label->setStyleSheet("QLabel { }");
+    }
 
     emu_speed_label->setVisible(true);
     game_fps_label->setVisible(true);
