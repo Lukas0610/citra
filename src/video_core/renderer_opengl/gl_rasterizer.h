@@ -257,8 +257,6 @@ private:
     size_t uniform_size_aligned_gs;
     size_t uniform_size_aligned_ps;
 
-    // TODO (wwylele): consider caching texture cube in the rasterizer cache
-    OGLTexture texture_cube;
     SamplerInfo texture_cube_sampler;
 
     OGLBuffer lighting_lut_buffer;
