@@ -16,6 +16,8 @@
 #include "common/string_util.h"
 #endif
 
+#define D_ROOT_PATH_ENV "CITRA_USER_ROOT_DIR"
+
 // User directory indices for GetUserPath
 enum {
     D_USER_IDX,

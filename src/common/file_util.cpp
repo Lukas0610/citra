@@ -682,6 +682,21 @@ std::string GetSysDirectory() {
 // directory. To be used in "multi-user" mode (that is, installed).
 const std::string& GetUserPath(const unsigned int DirIDX, const std::string& newPath) {
     static std::string paths[NUM_PATH_INDICES];
+    static bool fetchedRootEnv = false;
+    static std::string rootEnvPath = "";
+
+    if (!fetchedRootEnv) {
+        const char* rootEnv = getenv(D_ROOT_PATH_ENV);
+
+        if (rootEnv != nullptr) {
+            rootEnvPath = Common::StripQuotes(
+                Common::StripSpaces(rootEnv));
+
+            rootEnvPath += DIR_SEP;
+        }
+
+        fetchedRootEnv = true;
+    }
 
     // Set up all paths and files on the first run
     if (paths[D_USER_IDX].empty()) {
@@ -691,6 +706,10 @@ const std::string& GetUserPath(const unsigned int DirIDX, const std::string& new
             paths[D_USER_IDX] = AppDataRoamingDirectory() + DIR_SEP EMU_DATA_DIR DIR_SEP;
         } else {
             NGLOG_INFO(Common_Filesystem, "Using the local user directory");
+        }
+
+        if (!rootEnvPath.empty()) {
+            paths[D_USER_IDX] = rootEnvPath;
         }
 
         paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
@@ -727,11 +746,19 @@ const std::string& GetUserPath(const unsigned int DirIDX, const std::string& new
 
         switch (DirIDX) {
         case D_ROOT_IDX:
-            paths[D_USER_IDX] = paths[D_ROOT_IDX] + DIR_SEP;
+            if (rootEnvPath.empty()) {
+                paths[D_USER_IDX] = paths[D_ROOT_IDX] + DIR_SEP;
+            } else {
+                paths[D_USER_IDX] = rootEnvPath;
+            }
             break;
 
         case D_USER_IDX:
-            paths[D_USER_IDX] = paths[D_ROOT_IDX] + DIR_SEP;
+            if (rootEnvPath.empty()) {
+                paths[D_USER_IDX] = paths[D_ROOT_IDX] + DIR_SEP;
+            } else {
+                paths[D_USER_IDX] = rootEnvPath;
+            }
             paths[D_CONFIG_IDX] = paths[D_USER_IDX] + CONFIG_DIR DIR_SEP;
             paths[D_CACHE_IDX] = paths[D_USER_IDX] + CACHE_DIR DIR_SEP;
             paths[D_SDMC_IDX] = paths[D_USER_IDX] + SDMC_DIR DIR_SEP;
