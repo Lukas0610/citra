@@ -4,15 +4,22 @@
 
 #pragma once
 
-#include <mutex>
+#include <atomic>
 
 namespace HLE {
-/*
- * Synchronizes access to the internal HLE kernel structures, it is acquired when a guest
- * application thread performs a syscall. It should be acquired by any host threads that read or
- * modify the HLE kernel state. Note: Any operation that directly or indirectly reads from or writes
- * to the emulated memory is not protected by this mutex, and should be avoided in any threads other
- * than the CPU thread.
- */
-extern std::recursive_mutex g_hle_lock;
+
+class Lock {
+
+public:
+    Lock();
+    ~Lock();
+
+    static void acquire();
+    static bool tryAcquire();
+    static void release();
+
+private:
+    static std::atomic_flag mLock;
+};
+
 } // namespace HLE
