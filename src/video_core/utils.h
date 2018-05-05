@@ -49,4 +49,16 @@ static inline u32 GetMortonOffset(u32 x, u32 y, u32 bytes_per_pixel) {
     return (i + offset) * bytes_per_pixel;
 }
 
+#define DEFINE_BITFIELD(name, size) \
+    register size name = 0;
+
+#define TEST_BIT(name, index) \
+    (!!(name & (1 << index)))
+
+#define SET_BIT(name, index) \
+    name |= (1 << index);
+
+#define CLEAR_BIT(name, index) \
+    name &= ~(1 << index);
+
 } // namespace VideoCore

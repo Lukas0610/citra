@@ -25,6 +25,7 @@
 #include "video_core/regs_pipeline.h"
 #include "video_core/regs_texturing.h"
 #include "video_core/renderer_base.h"
+#include "video_core/utils.h"
 #include "video_core/shader/shader.h"
 #include "video_core/vertex_loader.h"
 #include "video_core/video_core.h"
@@ -356,10 +357,11 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
         // Simple circular-replacement vertex cache
         // The size has been tuned for optimal balance between hit-rate and the cost of lookup
         const size_t VERTEX_CACHE_SIZE = 32;
-        std::array<bool, VERTEX_CACHE_SIZE> vertex_cache_valid{};
         std::array<u16, VERTEX_CACHE_SIZE> vertex_cache_ids;
         std::array<Shader::AttributeBuffer, VERTEX_CACHE_SIZE> vertex_cache;
         Shader::AttributeBuffer vs_output;
+
+        DEFINE_BITFIELD(vertex_cache_valid, u32);
 
         unsigned int vertex_cache_pos = 0;
 
@@ -394,7 +396,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
                 }
 
                 for (unsigned int i = 0; i < VERTEX_CACHE_SIZE; ++i) {
-                    if (vertex_cache_valid[i] && vertex == vertex_cache_ids[i]) {
+                    if (TEST_BIT(vertex_cache_valid, i) && vertex == vertex_cache_ids[i]) {
                         vs_output = vertex_cache[i];
                         vertex_cache_hit = true;
                         break;
@@ -417,7 +419,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
 
                 if (is_indexed) {
                     vertex_cache[vertex_cache_pos] = vs_output;
-                    vertex_cache_valid[vertex_cache_pos] = true;
+                    SET_BIT(vertex_cache_valid, vertex_cache_pos);
                     vertex_cache_ids[vertex_cache_pos] = vertex;
                     vertex_cache_pos = (vertex_cache_pos + 1) % VERTEX_CACHE_SIZE;
                 }
