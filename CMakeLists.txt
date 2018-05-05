@@ -18,6 +18,12 @@ CMAKE_DEPENDENT_OPTION(CITRA_USE_BUNDLED_QT "Download bundled Qt binaries" ON "E
 
 option(ENABLE_WEB_SERVICE "Enable web services (telemetry, etc.)" ON)
 
+option(OPTIMIZE_ENABLE_SSE "Enable Streaming SIMD Extensions" OFF)
+option(OPTIMIZE_ENABLE_SSE2 "Enable Streaming SIMD Extensions version 2" OFF)
+option(OPTIMIZE_ENABLE_AVX "Enable Advanced Vector Extensions" OFF)
+option(OPTIMIZE_ENABLE_AVX2 "Enable Advanced Vector Extensions version 2" ON)
+option(OPTIMIZE_FAST_FP "Enable fast floating point arithmetic" ON)
+
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit)
     message(STATUS "Copying pre-commit hook")
     file(COPY hooks/pre-commit
@@ -138,6 +144,37 @@ else()
     # /Zo - enhanced debug info for optimized builds
     # /permissive- - enables stricter C++ standards conformance checks
     set(CMAKE_C_FLAGS   "/W3 /MP /Zi /Zo /permissive-" CACHE STRING "" FORCE)
+
+    if (OPTIMIZE_ENABLE_SSE)
+        add_definitions(/DOPTIMIZE_ENABLE_SSE)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE" CACHE STRING "" FORCE)
+    endif()
+
+    if (OPTIMIZE_ENABLE_SSE2)
+        add_definitions(/DOPTIMIZE_ENABLE_SSE2)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2" CACHE STRING "" FORCE)
+    endif()
+
+    if (OPTIMIZE_ENABLE_AVX)
+        add_definitions(/DOPTIMIZE_ENABLE_AVX)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:AVX" CACHE STRING "" FORCE)
+    endif()
+
+    if (OPTIMIZE_ENABLE_AVX2)
+        add_definitions(/DOPTIMIZE_ENABLE_AVX2)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:AVX2" CACHE STRING "" FORCE)
+    endif()
+
+    if (OPTIMIZE_ENABLE_AVX2)
+        add_definitions(/DOPTIMIZE_ENABLE_AVX2)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:AVX2" CACHE STRING "" FORCE)
+    endif()
+
+    if (OPTIMIZE_FAST_FP)
+        add_definitions(/DOPTIMIZE_FAST_FP)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast" CACHE STRING "" FORCE)
+    endif()
+
     # /EHsc - C++-only exception handling semantics
     # /std:c++latest - Latest available C++ standard
     # /Zc:throwingNew - let codegen assume `operator new` will never return null
