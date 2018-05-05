@@ -320,7 +320,7 @@ static void WritePicaReg(u32 id, u32 value, u32 mask) {
             if (g_debug_context) {
                 g_debug_context->OnEvent(DebugContext::Event::FinishedPrimitiveBatch, nullptr);
             }
-            break;
+            // break;
         }
 
         // Processes information about internal vertex attributes to figure out how a vertex is
