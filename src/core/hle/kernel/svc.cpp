@@ -1398,7 +1398,7 @@ void CallSVC(u32 immediate) {
     MICROPROFILE_SCOPE(Kernel_SVC);
 
     // Lock the global kernel mutex when we enter the kernel HLE.
-    std::lock_guard<std::recursive_mutex> lock(HLE::g_hle_lock);
+    HLE::Lock();
 
     ASSERT_MSG(g_current_process->status == ProcessStatus::Running,
                "Running threads from exiting processes is unimplemented");

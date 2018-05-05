@@ -232,9 +232,9 @@ void HandleAssociationResponseFrame(const Network::WifiPacket& packet) {
 }
 
 static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
-    std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
     std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
-    std::lock(hle_lock, lock);
+
+    HLE::Lock();
 
     if (GetEAPoLFrameType(packet.data) == EAPoLStartMagic) {
         if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost)) {
@@ -343,9 +343,9 @@ static void HandleEAPoLPacket(const Network::WifiPacket& packet) {
 
 static void HandleSecureDataPacket(const Network::WifiPacket& packet) {
     auto secure_data = ParseSecureDataHeader(packet.data);
-    std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
     std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
-    std::lock(hle_lock, lock);
+
+    HLE::Lock();
 
     if (secure_data.src_node_id == connection_status.network_node_id) {
         // Ignore packets that came from ourselves.
@@ -478,9 +478,10 @@ void HandleAuthenticationFrame(const Network::WifiPacket& packet) {
 /// Handles the deauthentication frames sent from clients to hosts, when they leave a session
 void HandleDeauthenticationFrame(const Network::WifiPacket& packet) {
     LOG_DEBUG(Service_NWM, "called");
-    std::unique_lock<std::recursive_mutex> hle_lock(HLE::g_hle_lock, std::defer_lock);
     std::unique_lock<std::mutex> lock(connection_status_mutex, std::defer_lock);
-    std::lock(hle_lock, lock);
+
+    HLE::Lock();
+
     if (connection_status.status != static_cast<u32>(NetworkStatus::ConnectedAsHost)) {
         LOG_ERROR(Service_NWM, "Got deauthentication frame but we are not the host");
         return;
