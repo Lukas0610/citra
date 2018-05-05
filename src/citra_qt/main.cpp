@@ -1340,8 +1340,28 @@ void GMainWindow::OnLanguageChanged(const QString& locale) {
 }
 
 void GMainWindow::SetupUIStrings() {
+    std::string build_mode = "";
+#if defined(OPTIMIZE_ENABLE_SSE)
+    build_mode = "SSE";
+#elif defined(OPTIMIZE_ENABLE_SSE2)
+    build_mode = "SSE2";
+#elif defined(OPTIMIZE_ENABLE_AVX)
+    build_mode = "AVX";
+#elif defined(OPTIMIZE_ENABLE_AVX2)
+    build_mode = "AVX2";
+#endif
+
+    if (!build_mode.empty()) {
+        build_mode = " - " + build_mode;
+
+#if defined(OPTIMIZE_FAST_FP)
+        build_mode += " - FastFP";
+#endif
+    }
+
     setWindowTitle(
-        tr("Citra %1| %2-%3").arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc));
+        tr("Citra %1| %2-%3%4").arg(Common::g_build_name, Common::g_scm_branch, Common::g_scm_desc,
+                                    build_mode.c_str()));
 }
 
 void GMainWindow::SyncMenuUISettings() {
