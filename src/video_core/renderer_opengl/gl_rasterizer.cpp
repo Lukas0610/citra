@@ -443,44 +443,18 @@ bool RasterizerOpenGL::AccelerateDrawBatch(bool is_indexed) {
         return false;
 
     accelerate_draw = is_indexed ? AccelDraw::Indexed : AccelDraw::Arrays;
-    return DrawTriangles();
+    DrawTriangles();
+
+    return true;
 }
 
-bool RasterizerOpenGL::DrawTriangles() {
+void RasterizerOpenGL::DrawTriangles() {
     if (vertex_batch.empty() && accelerate_draw == AccelDraw::Disabled)
-        return false;
+        return;
 
     MICROPROFILE_SCOPE(OpenGL_Drawing);
     const auto& regs = Pica::g_state.regs;
     const bool use_gs = regs.pipeline.use_gs == Pica::PipelineRegs::UseGS::Yes;
-
-    const auto pica_textures = regs.texturing.GetTextures();
-    bool has_usable_pica_textures = false;
-
-    // TODO: find out why some 2D-textures aren't being rendered with this check applied
-    for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
-        const auto &texture = pica_textures[texture_index];
-
-        if (texture.enabled) {
-            if (texture_index == 0) {
-                using TextureType = Pica::TexturingRegs::TextureConfig::TextureType;
-                switch (texture.config.type.Value()) {
-                case TextureType::TextureCube:
-                    continue;
-                }
-            }
-
-            Surface surface = res_cache.GetTextureSurface(texture);
-            if (surface != nullptr) {
-                has_usable_pica_textures = true;
-                break;
-            }
-        }
-    }
-
-    if (!has_usable_pica_textures) {
-        return false;
-    }
 
     const bool has_stencil =
         regs.framebuffer.framebuffer.depth_format == Pica::FramebufferRegs::DepthFormat::D24S8;
@@ -599,6 +573,7 @@ bool RasterizerOpenGL::DrawTriangles() {
     }
 
     // Sync and bind the texture surfaces
+    const auto pica_textures = regs.texturing.GetTextures();
     for (unsigned texture_index = 0; texture_index < pica_textures.size(); ++texture_index) {
         const auto& texture = pica_textures[texture_index];
 
@@ -843,8 +818,6 @@ bool RasterizerOpenGL::DrawTriangles() {
         res_cache.InvalidateRegion(boost::icl::first(interval), boost::icl::length(interval),
                                    depth_surface);
     }
-
-    return true;
 }
 
 void RasterizerOpenGL::NotifyPicaRegisterChanged(u32 id) {
