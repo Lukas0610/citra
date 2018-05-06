@@ -23,6 +23,7 @@ option(OPTIMIZE_ENABLE_SSE2 "Enable Streaming SIMD Extensions version 2" OFF)
 option(OPTIMIZE_ENABLE_AVX "Enable Advanced Vector Extensions" OFF)
 option(OPTIMIZE_ENABLE_AVX2 "Enable Advanced Vector Extensions version 2" ON)
 option(OPTIMIZE_FAST_FP "Enable fast floating point arithmetic" ON)
+option(OPTIMIZE_BASIC "Enable basic optimizations for emulation speed" ON)
 
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git/hooks/pre-commit)
     message(STATUS "Copying pre-commit hook")
@@ -173,6 +174,11 @@ else()
     if (OPTIMIZE_FAST_FP)
         add_definitions(/DOPTIMIZE_FAST_FP)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /fp:fast" CACHE STRING "" FORCE)
+    endif()
+
+    if (OPTIMIZE_BASIC)
+        add_definitions(/DOPTIMIZE_BASIC)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /Ob2 /Oi /Ot /Oy /GL /fp:except- /Gy-" CACHE STRING "" FORCE)
     endif()
 
     # /EHsc - C++-only exception handling semantics
